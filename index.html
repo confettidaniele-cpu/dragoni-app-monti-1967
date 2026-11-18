@@ -1,0 +1,85 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dragoni App · USD Monti 1967</title><style>
+:root{font-family:system-ui,sans-serif;color:#16334e;background:#eff8ff}*{box-sizing:border-box}body{margin:0}
+header{background:linear-gradient(110deg,#007ec9,#003f79);color:white;padding:25px 5%}header h1{margin:0}header p{margin:7px 0 0}
+main{max-width:1080px;margin:22px auto;padding:0 15px}.panel{background:white;padding:20px;border-radius:15px;margin:14px 0;box-shadow:0 4px 15px #00487812}
+nav{display:flex;gap:10px;flex-wrap:wrap}button{background:#0879c3;color:white;border:0;border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:650;margin:5px 5px 5px 0}
+button.secondary{background:#e1eff9;color:#00528a}input,textarea,select{width:100%;padding:10px;margin:5px 0 12px;border:1px solid #afcbdc;border-radius:7px;font:inherit}
+textarea{min-height:110px}label{font-weight:650}article{padding:13px 0;border-bottom:1px solid #dae8f2}article:last-child{border:0}
+small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}.hide{display:none}
+.notice{background:#fff3d2;padding:12px;border-radius:9px}img{max-width:100%;max-height:320px;object-fit:contain;border-radius:10px}
+</style></head><body><header><h1>🐉 USD MONTI 1967 · DRAGONI APP</h1><p>La casa digitale dei Dragoni · Azzurro e bianco</p></header>
+<main><div id="configNotice" class="notice hide">Versione pronta per la configurazione: inserire URL e chiave pubblica Supabase nel file config.js.</div>
+<nav><button onclick="view('fan')">📱 Tifosi</button><button onclick="view('admin')">🔐 Dirigenti</button></nav>
+<section id="fan"><div class="panel"><h2>💙 Forza Monti, forza Dragoni!</h2>Notizie, risultati e prossime partite delle sei categorie.</div>
+<div class="grid"><div class="panel"><h2>📰 Notizie</h2><div id="newsList"></div></div><div class="panel"><h2>⚽ Risultati</h2><div id="matchesList"></div></div></div>
+<div class="panel"><h2>📅 Prossime partite</h2><div id="fixturesList"></div></div>
+<div class="panel"><h2>🏆 Classifiche</h2><p>In attesa di integrazione autorizzata con Tuttocampo.</p></div></section>
+<section id="admin" class="hide"><div class="panel"><h2>Accesso dirigenti</h2><div id="login">
+<label>Email</label><input id="email" type="email" autocomplete="username">
+<label>Password</label><input id="password" type="password" autocomplete="current-password">
+<button id="loginBtn">Accedi</button></div><div id="logged" class="hide"><span id="roleText"></span><button class="secondary" id="logoutBtn">Esci</button></div><p id="message" role="status"></p></div>
+<div id="editor" class="hide"><div class="panel"><h2>📰 Pubblica notizia</h2><form id="newsForm">
+<label>Titolo</label><input name="title" required><label>Categoria</label><select name="category"></select>
+<label>Testo</label><textarea name="body" required></textarea><label>Fotografia (JPG/PNG, massimo 2 MB)</label><input name="photo" type="file" accept="image/jpeg,image/png"><button>Pubblica notizia</button></form></div>
+<div class="grid"><div class="panel"><h2>⚽ Inserisci risultato</h2><form id="matchForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Gol casa</label><input name="home_score" type="number" min="0" required><label>Gol ospiti</label><input name="away_score" type="number" min="0" required><label>Data</label><input name="match_date" type="date" required><button>Salva risultato</button></form></div>
+<div class="panel"><h2>📅 Inserisci partita</h2><form id="fixtureForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Data</label><input name="match_date" type="date" required><label>Ora</label><input name="match_time" type="time" required><label>Campo</label><input name="venue" required><button>Salva partita</button></form></div></div>
+<div class="panel"><h2>Gestisci contenuti</h2><div id="manageList"></div></div></div></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="config.js"></script><script>
+const $=id=>document.getElementById(id), categories=['Seconda Categoria','Juniores','Allievi','Esordienti','Pulcini','Primi Calci','Società'];
+document.querySelectorAll('select[name=category]').forEach(s=>s.innerHTML=categories.map(c=>`<option>${c}</option>`).join(''));
+const ready=window.DRAGONI_CONFIG?.url?.startsWith('https://')&&window.DRAGONI_CONFIG?.anonKey&&!window.DRAGONI_CONFIG.anonKey.includes('INSERISCI');
+const db=ready?supabase.createClient(window.DRAGONI_CONFIG.url,window.DRAGONI_CONFIG.anonKey):null;
+if(!db)$('configNotice').classList.remove('hide');
+let role=null;
+function view(which){$('fan').classList.toggle('hide',which!=='fan');$('admin').classList.toggle('hide',which!=='admin');window.scrollTo(0,0)}
+function el(tag,txt,cls){let n=document.createElement(tag);if(txt!==undefined)n.textContent=txt;if(cls)n.className=cls;return n}
+function row(parent,lines,img){let a=el('article');if(img){let i=el('img');i.src=img;i.alt='Foto della notizia';a.append(i)}lines.forEach((t,j)=>a.append(el(j===0?'h3':'p',t)));parent.append(a)}
+async function load(){
+if(!db)return;
+for(let [table,id] of [['news','newsList'],['matches','matchesList'],['fixtures','fixturesList']]){
+let target=$(id);target.replaceChildren(el('p','Caricamento...','muted'));
+let {data,error}=await db.from(table).select('*').order(table==='news'?'created_at':'match_date',{ascending:false}).limit(100);
+target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+error.message));continue}
+if(!data.length)target.append(el('p','Nessun contenuto pubblicato.','muted'));
+for(let r of data){if(table==='news')row(target,[r.title,r.category,r.body],r.photo_url);
+if(table==='matches')row(target,[`${r.home} ${r.home_score} – ${r.away_score} ${r.away}`,`${r.category} · ${r.match_date}`]);
+if(table==='fixtures')row(target,[`${r.home} – ${r.away}`,`${r.category} · ${r.match_date} ore ${r.match_time.slice(0,5)} · ${r.venue}`]);}
+}await manage();
+}
+async function refreshAuth(){
+if(!db)return;
+const {data:{user}}=await db.auth.getUser();role=null;
+if(user){let {data}=await db.from('profiles').select('role').eq('id',user.id).maybeSingle();role=data?.role||null}
+$('login').classList.toggle('hide',!!user);$('logged').classList.toggle('hide',!user);
+$('editor').classList.toggle('hide',!['admin','redattore'].includes(role));
+$('roleText').textContent=user?`Accesso: ${user.email} · Ruolo: ${role||'non assegnato'}`:'';
+await manage();
+}
+$('loginBtn').onclick=async()=>{if(!db)return;let {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('message').textContent=error?error.message:'Accesso effettuato';await refreshAuth()};
+$('logoutBtn').onclick=async()=>{await db.auth.signOut();await refreshAuth()};
+function values(form){let fd=new FormData(form),obj={};for(let [k,v] of fd)if(k!=='photo')obj[k]=v;return obj}
+async function saveRecord(table,record){let {error}=await db.from(table).insert(record);if(error)throw Error(error.message)}
+for(let [formId,table] of [['matchForm','matches'],['fixtureForm','fixtures']]){
+$(formId).onsubmit=async e=>{e.preventDefault();try{await saveRecord(table,values(e.target));e.target.reset();$('message').textContent='Contenuto salvato';await load()}catch(err){$('message').textContent=err.message}}}
+$('newsForm').onsubmit=async e=>{e.preventDefault();try{
+let obj=values(e.target),file=e.target.elements.photo.files[0];
+if(file){if(file.size>2*1024*1024||!['image/jpeg','image/png'].includes(file.type))throw Error('Foto JPG o PNG, massimo 2 MB');
+let path=crypto.randomUUID()+'.'+(file.type==='image/png'?'png':'jpg');
+let {error}=await db.storage.from('news-photos').upload(path,file,{contentType:file.type});if(error)throw Error(error.message);
+obj.photo_url=db.storage.from('news-photos').getPublicUrl(path).data.publicUrl;
+}
+await saveRecord('news',obj);e.target.reset();$('message').textContent='Notizia pubblicata';await load();
+}catch(err){$('message').textContent=err.message}};
+async function manage(){
+let target=$('manageList');target.replaceChildren();
+if(!db||!['admin','redattore'].includes(role))return;
+for(let [table,label] of [['news','Notizia'],['matches','Risultato'],['fixtures','Partita']]){
+let {data}=await db.from(table).select('*').limit(100);for(let r of data||[]){
+let a=el('article'),b=el('button','Elimina','secondary');
+a.append(el('span',label+': '+(r.title||`${r.home} – ${r.away}`)+' '),b);
+b.onclick=async()=>{if(!confirm('Eliminare questo contenuto?'))return;let {error}=await db.from(table).delete().eq('id',r.id);$('message').textContent=error?error.message:'Eliminato';await load()};
+target.append(a);
+}}}
+(async()=>{await load();await refreshAuth()})();
+</script></body></html>
