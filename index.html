@@ -19,8 +19,16 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
 <label>Email</label><input id="email" type="email" autocomplete="username">
 <label>Password</label><input id="password" type="password" autocomplete="current-password">
 <button id="loginBtn">Accedi</button></div><div id="logged" class="hide"><span id="roleText"></span><button class="secondary" id="logoutBtn">Esci</button></div><p id="message" role="status"></p></div>
-<div id="editor" class="hide"><div class="panel"><h2>📰 Pubblica notizia</h2><form id="newsForm">
-<label>Titolo</label><input name="title" required><label>Categoria</label><select name="category"></select>
+<button type="button" class="secondary" id="forgotPasswordBtn">Password dimenticata?</button><div id="editor" class="hide"><div class="panel"><h2>📰 Pubblica notizia</h2><form id="newsForm">
+<section id="resetPassword" class="hide">
+  <div class="panel">
+    <h2>Imposta nuova password</h2>
+    <label>Nuova password</label>
+    <input id="newPassword" type="password" autocomplete="new-password" minlength="8">
+    <button type="button" id="saveNewPassword">Salva nuova password</button>
+    <p id="resetMessage" role="status"></p>
+  </div>
+</section><label>Titolo</label><input name="title" required><label>Categoria</label><select name="category"></select>
 <label>Testo</label><textarea name="body" required></textarea><label>Fotografia (JPG/PNG, massimo 2 MB)</label><input name="photo" type="file" accept="image/jpeg,image/png"><button>Pubblica notizia</button></form></div>
 <div class="grid"><div class="panel"><h2>⚽ Inserisci risultato</h2><form id="matchForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Gol casa</label><input name="home_score" type="number" min="0" required><label>Gol ospiti</label><input name="away_score" type="number" min="0" required><label>Data</label><input name="match_date" type="date" required><button>Salva risultato</button></form></div>
 <div class="panel"><h2>📅 Inserisci partita</h2><form id="fixtureForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Data</label><input name="match_date" type="date" required><label>Ora</label><input name="match_time" type="time" required><label>Campo</label><input name="venue" required><button>Salva partita</button></form></div></div>
@@ -47,8 +55,15 @@ if(table==='matches')row(target,[`${r.home} ${r.home_score} – ${r.away_score} 
 if(table==='fixtures')row(target,[`${r.home} – ${r.away}`,`${r.category} · ${r.match_date} ore ${r.match_time.slice(0,5)} · ${r.venue}`]);}
 }await manage();
 }
-async function refreshAuth(){
-if(!db)return;
+db.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    $('resetPasswordForm').classList.remove('hide');
+    $('login').classList.add('hide');
+    $('editor').classList.add('hide');
+  }
+}); 
+  async function refreshAuth(){
+    if (!$('resetPasswordForm').classList.contains('hide')) return;if(!db)return;
 const {data:{user}}=await db.auth.getUser();role=null;
 if(user){let {data}=await db.from('profiles').select('role').eq('id',user.id).maybeSingle();role=data?.role||null}
 $('login').classList.toggle('hide',!!user);$('logged').classList.toggle('hide',!user);
@@ -57,8 +72,48 @@ $('roleText').textContent=user?`Accesso: ${user.email} · Ruolo: ${role||'non as
 await manage();
 }
 $('loginBtn').onclick=async()=>{if(!db)return;let {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});$('message').textContent=error?error.message:'Accesso effettuato';await refreshAuth()};
-$('logoutBtn').onclick=async()=>{await db.auth.signOut();await refreshAuth()};
-function values(form){let fd=new FormData(form),obj={};for(let [k,v] of fd)if(k!=='photo')obj[k]=v;return obj}
+$('forgotPasswordBtn').onclick = async () => {
+  if (!db) return;
+  const email = $('email').value.trim();
+  if (!email) {
+    alert('Inserisci prima la tua email');
+    return;
+  }const { error } = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+
+  if (error) {
+    alert('Errore: ' + error.message);
+  } else {
+   alert('Se l’indirizzo è registrato, riceverai un’email per reimpostare la password.');
+  }
+};
+
+$('logoutBtn').onclick = async () => {
+  await db.auth.signOut();
+  await refreshAuth();
+};
+$('saveNewPassword').onclick = async () => {
+  const password = $('newPassword').value;
+
+  if (password.length < 8) {
+    alert('La password deve avere almeno 8 caratteri.');
+    return;
+  }
+
+  const { error } = await db.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    alert('Errore: ' + error.message);
+  } else {
+    alert('Password aggiornata con successo!');
+    $('resetPasswordForm').classList.add('hide');
+    await refreshAuth();
+  }
+};
+  function values(form){let fd=new FormData(form),obj={};for(let [k,v] of fd)if(k!=='photo')obj[k]=v;return obj}
 async function saveRecord(table,record){let {error}=await db.from(table).insert(record);if(error)throw Error(error.message)}
 for(let [formId,table] of [['matchForm','matches'],['fixtureForm','fixtures']]){
 $(formId).onsubmit=async e=>{e.preventDefault();try{await saveRecord(table,values(e.target));e.target.reset();$('message').textContent='Contenuto salvato';await load()}catch(err){$('message').textContent=err.message}}}
