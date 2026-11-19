@@ -61,6 +61,7 @@ db.auth.onAuthStateChange((event) => {
 alert('Recupero password riconosciuto!');
     view('admin');
 $('resetPasswordForm').classList.remove('hide');
+$('resetPasswordForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('login').classList.add('hide');
     $('editor').classList.add('hide');
   }
