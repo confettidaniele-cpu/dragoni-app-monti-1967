@@ -70,22 +70,46 @@ if(table==='results' && r.home_team?.toLowerCase().includes('monti') || table===
    const montiLogo = 'https://raw.githubusercontent.com/confettidaniele-cpu/dragoni-app-monti-1967/main/11531995-5BD6-4F50-B843-262C7B1B9BD6.PNG';
 const monzoneLogo = 'Monzone.jpg';
 
-row(target, [
-  `${r.home_team} ${r.home_score} – ${r.away_score} ${r.away_team}`,
-  `${r.category} · ${r.match_date}`
-]);
 
-const stemmi = document.createElement('div');
-stemmi.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:25px;margin:15px 0';
+const articolo = document.createElement('article');
 
-for (const file of [montiLogo, monzoneLogo]) {
+const tabellone = document.createElement('div');
+tabellone.style.cssText = 'display:flex;align-items:center;justify-content:space-around;gap:10px;text-align:center;margin:15px 0;';
+
+function squadra(nome, logo) {
+  const contenitore = document.createElement('div');
+  contenitore.style.cssText = 'flex:1;min-width:0;';
+
   const img = document.createElement('img');
-  img.src = encodeURI(file);
-  img.style.cssText = 'width:75px;height:75px;object-fit:contain';
-  stemmi.appendChild(img);
+  img.src = logo;
+  img.alt = nome;
+  img.style.cssText = 'width:75px;height:75px;max-width:100%;object-fit:contain;';
+
+  const titolo = document.createElement('div');
+  titolo.textContent = nome;
+  titolo.style.cssText = 'font-size:13px;font-weight:bold;margin-top:8px;overflow-wrap:anywhere;';
+
+  contenitore.append(img, titolo);
+  return contenitore;
 }
 
-target.querySelector('article').prepend(stemmi);
+const risultato = document.createElement('div');
+risultato.textContent = `${r.home_score} - ${r.away_score}`;
+risultato.style.cssText = 'font-size:32px;font-weight:900;color:#0052a8;white-space:nowrap;';
+
+tabellone.append(
+  squadra(r.home_team, montiLogo),
+  risultato,
+  squadra(r.away_team, monzoneLogo)
+);
+
+const dettagli = document.createElement('p');
+dettagli.textContent = `${r.category} · ${r.match_date}`;
+dettagli.style.cssText = 'text-align:center;font-size:13px;color:#60758a;';
+
+articolo.append(tabellone, dettagli);
+target.append(articolo);
+
   }
 }
 if(table==='fixtures')row(target,[`${r.home_team} – ${r.away_team}`,`${r.category} · ${r.match_date} ore ${r.match_time?.slice(0,5) || ''} · ${r.venue}`]);}
