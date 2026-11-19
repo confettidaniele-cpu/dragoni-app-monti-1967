@@ -59,7 +59,8 @@ if(table==='fixtures')row(target,[`${r.home} – ${r.away}`,`${r.category} · ${
 db.auth.onAuthStateChange((event) => {
   if (event === 'PASSWORD_RECOVERY') {
 alert('Recupero password riconosciuto!');
-    $('resetPasswordForm').classList.remove('hide');
+    view('admin');
+$('resetPasswordForm').classList.remove('hide');
     $('login').classList.add('hide');
     $('editor').classList.add('hide');
   }
