@@ -67,7 +67,9 @@ $('resetPasswordForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }); 
   async function refreshAuth(){
-    if (!$('resetPasswordForm').classList.contains('hide')) return;if(!db)return;
+   if (!db) return;
+const resetForm = $('resetPasswordForm');
+if (resetForm && !resetForm.classList.contains('hide')) return;
 const {data:{user}}=await db.auth.getUser();role=null;
 if(user){let {data}=await db.from('profiles').select('role').eq('id',user.id).maybeSingle();role=data?.role||null}
 $('login').classList.toggle('hide',!!user);$('logged').classList.toggle('hide',!user);
