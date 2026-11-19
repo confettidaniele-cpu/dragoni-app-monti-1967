@@ -22,7 +22,7 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
 <button type="button" class="secondary" id="forgotPasswordBtn">Password dimenticata?</button><div id="editor" class="hide"><div class="panel"><h2>📰 Pubblica notizia</h2><form id="newsForm">
   <label>Titolo</label><input name="title" required><label>Categoria</label><select name="category"></select>
 <label>Testo</label><textarea name="body" required></textarea><label>Fotografia (JPG/PNG, massimo 2 MB)</label><input name="photo" type="file" accept="image/jpeg,image/png"><button>Pubblica notizia</button></form></div>
-<div class="grid"><div class="panel"><h2>⚽ Inserisci risultato</h2><form id="matchForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Gol casa</label><input name="home_score" type="number" min="0" required><label>Gol ospiti</label><input name="away_score" type="number" min="0" required><label>Data</label><input name="match_date" type="date" required><button>Salva risultato</button></form></div>
+<div class="grid"><div class="panel"><h2>⚽ Inserisci risultato</h2><form id="matchForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home_team" required><label>Ospiti</label><input name="away_team" required><label>Gol casa</label><input name="home_score" type="number" min="0" required><label>Gol ospiti</label><input name="away_score" type="number" min="0" required><label>Data</label><input name="match_date" type="date" required><button>Salva risultato</button></form></div>
 <div class="panel"><h2>📅 Inserisci partita</h2><form id="fixtureForm"><label>Categoria</label><select name="category"></select><label>Casa</label><input name="home" required><label>Ospiti</label><input name="away" required><label>Data</label><input name="match_date" type="date" required><label>Ora</label><input name="match_time" type="time" required><label>Campo</label><input name="venue" required><button>Salva partita</button></form></div></div>
 <div class="panel"><h2>Gestisci contenuti</h2><div id="manageList"></div></div></div></section>
 <section id="resetPasswordForm" class="hide">
@@ -46,13 +46,13 @@ function el(tag,txt,cls){let n=document.createElement(tag);if(txt!==undefined)n.
 function row(parent,lines,img){let a=el('article');if(img){let i=el('img');i.src=img;i.alt='Foto della notizia';a.append(i)}lines.forEach((t,j)=>a.append(el(j===0?'h3':'p',t)));parent.append(a)}
 async function load(){
 if(!db)return;
-for(let [table,id] of [['news','newsList'],['matches','matchesList'],['fixtures','fixturesList']]){
+for(let [table,id] of [['news','newsList'],['results','matchesList'],['fixtures','fixturesList']]){
 let target=$(id);target.replaceChildren(el('p','Caricamento...','muted'));
 let {data,error}=await db.from(table).select('*').order(table==='news'?'created_at':'match_date',{ascending:false}).limit(100);
 target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+error.message));continue}
 if(!data.length)target.append(el('p','Nessun contenuto pubblicato.','muted'));
 for(let r of data){if(table==='news')row(target,[r.title,r.category,r.body],r.photo_url);
-if(table==='matches')row(target,[`${r.home} ${r.home_score} – ${r.away_score} ${r.away}`,`${r.category} · ${r.match_date}`]);
+if(table==='results')row(target,[`${r.home_team} ${r.home_score} – ${r.away_score} ${r.away_team}`,`${r.category} · ${r.match_date}`]);
 if(table==='fixtures')row(target,[`${r.home} – ${r.away}`,`${r.category} · ${r.match_date} ore ${r.match_time.slice(0,5)} · ${r.venue}`]);}
 }await manage();
 }
@@ -121,7 +121,7 @@ $('saveNewPassword').onclick = async () => {
 };
   function values(form){let fd=new FormData(form),obj={};for(let [k,v] of fd)if(k!=='photo')obj[k]=v;return obj}
 async function saveRecord(table,record){let {error}=await db.from(table).insert(record);if(error)throw Error(error.message)}
-for(let [formId,table] of [['matchForm','matches'],['fixtureForm','fixtures']]){
+for(let [formId,table] of [['matchForm','results'],['fixtureForm','fixtures']]){
 $(formId).onsubmit=async e=>{e.preventDefault();try{await saveRecord(table,values(e.target));e.target.reset();$('message').textContent='Contenuto salvato';await load()}catch(err){$('message').textContent=err.message}}}
 $('newsForm').onsubmit=async e=>{e.preventDefault();try{
 let obj=values(e.target),file=e.target.elements.photo.files[0];
@@ -135,7 +135,7 @@ await saveRecord('news',obj);e.target.reset();$('message').textContent='Notizia 
 async function manage(){
 let target=$('manageList');target.replaceChildren();
 if(!db||!['admin','redattore'].includes(role))return;
-for(let [table,label] of [['news','Notizia'],['matches','Risultato'],['fixtures','Partita']]){
+for(let [table,label] of [['news','Notizia'],['results','Risultato'],['fixtures','Partita']]){
 let {data}=await db.from(table).select('*').limit(100);for(let r of data||[]){
 let a=el('article'),b=el('button','Elimina','secondary');
 a.append(el('span',label+': '+(r.title||`${r.home} – ${r.away}`)+' '),b);
