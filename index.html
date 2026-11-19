@@ -68,7 +68,12 @@ if(table==='results' && r.home_team?.toLowerCase().includes('monti') || table===
   if(!target.querySelector('article')) {
   target.replaceChildren();
    const montiLogo = 'https://raw.githubusercontent.com/confettidaniele-cpu/dragoni-app-monti-1967/main/11531995-5BD6-4F50-B843-262C7B1B9BD6.PNG';
-const monzoneLogo = 'Monzone.jpg';
+const loghi = {
+  'monti': montiLogo,
+  'usd monti 1967': montiLogo,
+  'monzone': 'Monzone.jpg'
+};
+const trovaLogo = nome => loghi[nome.trim().toLowerCase()] || '';
 
 
 const articolo = document.createElement('article');
@@ -98,9 +103,9 @@ risultato.textContent = `${r.home_score} - ${r.away_score}`;
 risultato.style.cssText = 'font-size:32px;font-weight:900;color:#0052a8;white-space:nowrap;';
 
 tabellone.append(
-  squadra(r.home_team, montiLogo),
+ squadra(r.home_team, trovaLogo(r.home_team)),
   risultato,
-  squadra(r.away_team, monzoneLogo)
+ squadra(r.away_team, trovaLogo(r.away_team))
 );
 
 const dettagli = document.createElement('p');
