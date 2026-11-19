@@ -54,7 +54,7 @@ target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+e
 if(!data.length)target.append(el('p','Nessun contenuto pubblicato.','muted'));
 for(let r of data){if(table==='news')row(target,[r.title,r.category,r.body],r.photo_url);
 if(table==='results')row(target,[`${r.home_team} ${r.home_score} – ${r.away_score} ${r.away_team}`,`${r.category} · ${r.match_date}`]);
-if(table==='fixtures')row(target,[`${r.home} – ${r.away}`,`${r.category} · ${r.match_date} ore ${r.match_time.slice(0,5)} · ${r.venue}`]);}
+if(table==='fixtures')row(target,[`${r.home_team} – ${r.away_team}`,`${r.category} · ${r.match_date} ore ${r.match_time?.slice(0,5) || ''} · ${r.venue}`]);
 }await manage();
 }
 db.auth.onAuthStateChange((event) => {
