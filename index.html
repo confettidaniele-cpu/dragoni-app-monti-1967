@@ -64,7 +64,11 @@ let {data,error}=await db.from(table).select('*').order(table==='news'?'created_
 target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+error.message));continue}
 if(!data.length)target.append(el('p','Nessun contenuto pubblicato.','muted'));
 for(let r of data){if(table==='news')row(target,[r.title,r.category,r.body],r.photo_url);
-if(table==='results')row(target,[`${r.home_team} ${r.home_score} – ${r.away_score} ${r.away_team}`,`${r.category} · ${r.match_date}`]);
+if(table==='results' && r.home_team?.toLowerCase().includes('monti') || table==='results' && r.away_team?.toLowerCase().includes('monti')) {
+  if(target.children.length === 0) {
+    row(target,[`${r.home_team} ${r.home_score} – ${r.away_score} ${r.away_team}`,`${r.category} · ${r.match_date}`]);
+  }
+}
 if(table==='fixtures')row(target,[`${r.home_team} – ${r.away_team}`,`${r.category} · ${r.match_date} ore ${r.match_time?.slice(0,5) || ''} · ${r.venue}`]);}
 }await manage();
 }
