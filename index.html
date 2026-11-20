@@ -12,7 +12,20 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
 <main><div id="configNotice" class="notice hide">Versione pronta per la configurazione: inserire URL e chiave pubblica Supabase nel file config.js.</div>
 <nav><button onclick="view('fan')">📱 Tifosi</button><button onclick="view('admin')">🔐 Dirigenti</button></nav>
 <section id="fan"><div class="panel"><h2>💙 Forza Monti, forza Dragoni!</h2>Notizie, risultati e prossime partite delle sei categorie.</div>
-<div class="grid"><div class="panel"><h2>📰 Notizie</h2><div id="newsList"></div></div><div class="panel"><h2>⚽ Risultati</h2><div id="matchesList"></div></div></div>
+
+<div class="panel">
+  <h2>⚽ Risultati – Seconda Categoria</h2>
+  <div id="resultsList" style="display:none"></div>
+  <iframe
+    src="https://www.tuttocampo.it/WidgetV2/Risultati/61df1df4-2eab-4b90-8447-025ada599612"
+    title="Risultati Seconda Categoria"
+    width="100%"
+    height="600"
+    style="border:0;max-width:100%"
+    loading="lazy">
+  </iframe>
+</div>
+
 <div class="panel"><h2>📅 Prossime partite</h2><div id="fixturesList"></div></div>
 <div class="panel">
   <h2>🏆 Classifiche</h2>
