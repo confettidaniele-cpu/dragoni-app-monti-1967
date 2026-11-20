@@ -13,32 +13,83 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
 <nav><button onclick="view('fan')">📱 Tifosi</button><button onclick="view('admin')">🔐 Dirigenti</button></nav>
 <section id="fan"><div class="panel"><h2>💙 Forza Monti, forza Dragoni!</h2>Notizie, risultati e prossime partite delle sei categorie.</div>
 
-<div class="panel">
-  <h2>⚽ Risultati – Seconda Categoria</h2>
-  <div id="resultsList" style="display:none"></div>
-  <iframe
-    src="https://www.tuttocampo.it/WidgetV2/Risultati/61df1df4-2eab-4b90-8447-025ada599612"
-    title="Risultati Seconda Categoria"
-    width="100%"
-    height="600"
-    style="border:0;max-width:100%"
-    loading="lazy">
-  </iframe>
-</div>
 
-<div class="panel"><h2>📅 Prossime partite</h2><div id="fixturesList"></div></div>
-<div class="panel">
-  <h2>🏆 Classifiche</h2>
-  <div id="standingsList">
-<iframe
-  src="https://www.tuttocampo.it/WidgetV2/Classifica/61df1df4-2eab-4b90-8447-025ada599612"
-  width="100%"
-  height="800"
-  style="border:0;"
-  loading="lazy">
-</iframe>
+<section id="campionati">
+  <div class="panel">
+    <h2>🏆 Campionati USD Monti 1967</h2>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button type="button" onclick="scegliCampionato('seconda')">Seconda Categoria</button>
+      <button type="button" onclick="scegliCampionato('juniores')">Juniores U19</button>
+      <button type="button" onclick="scegliCampionato('allievi')">Allievi U17</button>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
+      <button type="button" onclick="scegliVista('risultati')">⚽ Risultati</button>
+      <button type="button" onclick="scegliVista('classifica')">🏆 Classifica</button>
+    </div>
+
+    <h3 id="titoloCampionato">Seconda Categoria - Risultati</h3>
+
+    <div id="resultsList" style="display:none"></div>
+    <div id="standingsList" style="display:none"></div>
+
+    <iframe
+      id="widgetCampionato"
+      title="Risultati e classifiche"
+      src="https://www.tuttocampo.it/WidgetV2/Risultati/61df1df4-2eab-4b90-8447-025ada599612"
+      width="100%"
+      height="650"
+      style="border:0;max-width:100%"
+      loading="lazy">
+    </iframe>
   </div>
-</div></section>
+
+  <div class="panel">
+    <h2>📅 Prossime partite</h2>
+    <div id="fixturesList"></div>
+  </div>
+</section>
+
+<script>
+  const widgetCampionati = {
+    seconda: "61df1df4-2eab-4b90-8447-025ada599612",
+    juniores: "b474d604-22fb-446d-9339-5790e27d5951",
+    allievi: "636949d1-a6ac-447e-bce7-b014cd07af4e"
+  };
+
+  const nomiCampionati = {
+    seconda: "Seconda Categoria",
+    juniores: "Juniores U19",
+    allievi: "Allievi U17"
+  };
+
+  let campionatoScelto = "seconda";
+  let vistaScelta = "risultati";
+
+  function aggiornaWidgetCampionato() {
+    const tipo = vistaScelta === "risultati" ? "Risultati" : "Classifica";
+    const codice = widgetCampionati[campionatoScelto];
+
+    document.getElementById("titoloCampionato").textContent =
+      nomiCampionati[campionatoScelto] + " - " + tipo;
+
+    const iframe = document.getElementById("widgetCampionato");
+    iframe.src = "https://www.tuttocampo.it/WidgetV2/" + tipo + "/" + codice;
+    iframe.height = vistaScelta === "risultati" ? "650" : "850";
+  }
+
+  function scegliCampionato(campionato) {
+    campionatoScelto = campionato;
+    aggiornaWidgetCampionato();
+  }
+
+  function scegliVista(vista) {
+    vistaScelta = vista;
+    aggiornaWidgetCampionato();
+  }
+</script>
+
 <section id="admin" class="hide"><div class="panel"><h2>Accesso dirigenti</h2><div id="login">
 <label>Email</label><input id="email" type="email" autocomplete="username">
 <label>Password</label><input id="password" type="password" autocomplete="current-password">
