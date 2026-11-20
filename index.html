@@ -123,7 +123,8 @@ function row(parent,lines,img){let a=el('article');if(img){let i=el('img');i.src
 async function load(){
 if(!db)return;
 for(let [table,id] of [['news','newsList'],['fixtures','fixturesList']]){
-let target=$(id);target.replaceChildren(el('p','Caricamento...','muted'));
+  let target = $(id);
+  if (!target) continue;
 let {data,error}=await db.from(table).select('*').order(table==='news'?'created_at':'match_date',{ascending:false}).limit(100);
 target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+error.message));continue}
 if(!data.length)target.append(el('p','Nessun contenuto pubblicato.','muted'));
