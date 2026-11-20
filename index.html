@@ -122,7 +122,7 @@ function el(tag,txt,cls){let n=document.createElement(tag);if(txt!==undefined)n.
 function row(parent,lines,img){let a=el('article');if(img){let i=el('img');i.src=img;i.alt='Foto della notizia';a.append(i)}lines.forEach((t,j)=>a.append(el(j===0?'h3':'p',t)));parent.append(a)}
 async function load(){
 if(!db)return;
-for(let [table,id] of [['news','newsList'],['results','matchesList'],['fixtures','fixturesList']]){
+for(let [table,id] of [['news','newsList'],['fixtures','fixturesList']]){
 let target=$(id);target.replaceChildren(el('p','Caricamento...','muted'));
 let {data,error}=await db.from(table).select('*').order(table==='news'?'created_at':'match_date',{ascending:false}).limit(100);
 target.replaceChildren();if(error){target.append(el('p','Errore caricamento: '+error.message));continue}
