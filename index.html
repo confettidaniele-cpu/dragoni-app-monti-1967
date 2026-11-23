@@ -44,10 +44,27 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
     </iframe>
   </div>
 
-  <div class="panel">
-    <h2>📅 Prossime partite</h2>
-    <div id="fixturesList"></div>
+ 
+<div class="panel">
+  <h2>📅 Prossime partite</h2>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px">
+    <button type="button" onclick="mostraProssima('seconda')">Seconda Categoria</button>
+    <button type="button" onclick="mostraProssima('juniores')">Juniores U19</button>
+    <button type="button" onclick="mostraProssima('allievi')">Allievi U17</button>
   </div>
+
+  <iframe
+    id="widgetProssima"
+    src="https://www.tuttocampo.it/WidgetV2/ProssimaPartita/61df1df4-2eab-4b90-8447-025ada599612"
+    width="100%"
+    height="350"
+    style="border:0;max-width:100%"
+    scrolling="no"
+    loading="lazy">
+  </iframe>
+</div>
+
 <div class="panel">
   <h2>📰 Notizie USD Monti 1967</h2>
   <div id="newsList"></div>
@@ -91,6 +108,16 @@ small,.muted{color:#627789}.grid{display:grid;grid-template-columns:repeat(auto-
     vistaScelta = vista;
     aggiornaWidgetCampionato();
   }
+
+function mostraProssima(campionato) {
+  const codice = widgetCampionati[campionato];
+  const iframe = document.getElementById("widgetProssima");
+
+  if (!codice || !iframe) return;
+
+  iframe.src =
+    "https://www.tuttocampo.it/WidgetV2/ProssimaPartita/" + codice;
+}
 </script>
 </section>
   
