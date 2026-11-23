@@ -267,7 +267,7 @@ if(!db||!['admin','redattore'].includes(role))return;
 for(let [table,label] of [['news','Notizia'],['results','Risultato'],['fixtures','Partita']]){
 let {data}=await db.from(table).select('*').limit(100);for(let r of data||[]){
 let a=el('article'),b=el('button','Elimina','secondary');
-a.append(el('span',label+': '+(r.title||`${r.home} – ${r.away}`)+' '),b);
+a.append(el('span',label+': '+(r.title||`${r.home_team} – ${r.away_team}`)+' '),b);
 b.onclick=async()=>{if(!confirm('Eliminare questo contenuto?'))return;let {error}=await db.from(table).delete().eq('id',r.id);$('message').textContent=error?error.message:'Eliminato';await load()};
 target.append(a);
 }}}
